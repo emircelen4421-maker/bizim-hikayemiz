@@ -28,6 +28,7 @@ function removeLoader() {
     if (!loader) return;
 
     loader.style.opacity = "0";
+    loader.style.pointerEvents = "none";
 
     setTimeout(() => {
         if (loader && loader.parentNode) {
@@ -36,15 +37,11 @@ function removeLoader() {
     }, 1000);
 }
 
-
-/* Sayfa tamamen açılınca loader'ı kaldır */
 window.addEventListener("load", () => {
     setTimeout(removeLoader, 700);
 });
 
-
-/* Herhangi bir yükleme sorunu olsa bile
-   2 saniyeden fazla loader'da kalmasın */
+/* Herhangi bir sorun olursa loader sonsuza kadar kalmasın */
 setTimeout(removeLoader, 2500);
 
 
@@ -54,6 +51,7 @@ setTimeout(removeLoader, 2500);
 
 const openBtn = $("#openBtn");
 const continueBtn = $("#continueBtn");
+
 const story = $("#story");
 const memories = $("#memories");
 
@@ -62,6 +60,7 @@ const music = $("#bgMusic");
 
 const typedEl = $("#typed");
 const gallery = $("#gallery");
+
 const replay = $("#replay");
 
 
@@ -85,7 +84,7 @@ async function startMusic() {
 
     } catch (error) {
 
-        console.log("Müzik başlatılamadı:", error);
+        console.log("Müzik otomatik başlatılamadı:", error);
 
     }
 }
@@ -97,7 +96,10 @@ async function startMusic() {
 
 if (musicBtn) {
 
-    musicBtn.addEventListener("click", async () => {
+    musicBtn.addEventListener("click", async (event) => {
+
+        event.preventDefault();
+        event.stopPropagation();
 
         if (!music) return;
 
@@ -122,20 +124,17 @@ if (musicBtn) {
    HİKÂYEMİZİ AÇ
 ========================= */
 
-let opened = false;
-
 if (openBtn) {
 
     openBtn.addEventListener("click", async (event) => {
 
         event.preventDefault();
+        event.stopPropagation();
 
-        /* Butona basıldığı için müzik başlayabilir */
+        /* Butona basıldığı anda müziği başlat */
         await startMusic();
 
-
-        /* Mektuba geç */
-
+        /* Mektuba git */
         if (story) {
 
             story.scrollIntoView({
@@ -145,9 +144,7 @@ if (openBtn) {
 
         }
 
-
-        /* Mektubu yazdır */
-
+        /* Biraz bekleyip mektubu yaz */
         setTimeout(() => {
 
             typeLetter();
@@ -175,10 +172,11 @@ function typeLetter() {
 
     let i = 0;
 
-
     function write() {
 
-        if (i >= LETTER.length) return;
+        if (i >= LETTER.length) {
+            return;
+        }
 
         typedEl.textContent += LETTER[i];
 
@@ -186,14 +184,12 @@ function typeLetter() {
 
         i++;
 
-
         setTimeout(
             write,
             character === "\n" ? 250 : 18
         );
 
     }
-
 
     write();
 
@@ -224,6 +220,22 @@ if (continueBtn && memories) {
 /* =========================
    FOTOĞRAFLAR
 ========================= */
+
+/*
+   FOTOĞRAFLAR GITHUB'DA ANA KLASÖRDE OLDUĞU İÇİN
+   "photos/" KULLANMIYORUZ.
+
+   Yapı:
+
+   index.html
+   style.css
+   script.js
+   music.mp3
+   foto1.jpg
+   foto2.jpg
+   foto3.jpg
+   ...
+*/
 
 const names = [
     "foto1.jpg",
@@ -263,7 +275,6 @@ function loadGallery() {
 
     gallery.innerHTML = "";
 
-
     names.forEach((name, index) => {
 
         const photo = document.createElement("div");
@@ -273,7 +284,11 @@ function loadGallery() {
 
         const image = document.createElement("img");
 
-       image.src = name;
+        /*
+           ÖNEMLİ:
+           Fotoğraflar ana klasörde.
+        */
+        image.src = name;
 
         image.alt = "Bizim anımız";
 
@@ -291,6 +306,8 @@ function loadGallery() {
 
         image.onerror = () => {
 
+            console.log("Fotoğraf bulunamadı:", name);
+
             photo.remove();
 
         };
@@ -300,8 +317,7 @@ function loadGallery() {
 
         caption.className = "caption";
 
-        caption.textContent =
-            captions[index] || "♥";
+        caption.textContent = captions[index] || "♥";
 
 
         photo.appendChild(image);
@@ -315,16 +331,19 @@ function loadGallery() {
 }
 
 
+/* Galeriyi başlat */
 loadGallery();
 
 
 /* =========================
-   NAV
+   NAVİGASYON
 ========================= */
 
 $$(".nav-dots button").forEach((button) => {
 
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+
+        event.preventDefault();
 
         const target = button.dataset.target;
 
@@ -346,31 +365,35 @@ $$(".nav-dots button").forEach((button) => {
    SECTION ANİMASYONLARI
 ========================= */
 
-const observer = new IntersectionObserver(
-    (entries) => {
+if ("IntersectionObserver" in window) {
 
-        entries.forEach((entry) => {
+    const observer = new IntersectionObserver(
+        (entries) => {
 
-            if (entry.isIntersecting) {
+            entries.forEach((entry) => {
 
-                entry.target.classList.add("active");
+                if (entry.isIntersecting) {
 
-            }
+                    entry.target.classList.add("active");
 
-        });
+                }
 
-    },
-    {
-        threshold: 0.35
-    }
-);
+            });
+
+        },
+        {
+            threshold: 0.35
+        }
+    );
 
 
-$$("section").forEach((section) => {
+    $$("section").forEach((section) => {
 
-    observer.observe(section);
+        observer.observe(section);
 
-});
+    });
+
+}
 
 
 /* =========================
@@ -409,7 +432,9 @@ function createHeart() {
 
     setTimeout(() => {
 
-        heart.remove();
+        if (heart.parentNode) {
+            heart.remove();
+        }
 
     }, 15000);
 
@@ -455,18 +480,24 @@ if (sparkles) {
 
 if (replay) {
 
-    replay.addEventListener("click", () => {
+    replay.addEventListener("click", (event) => {
+
+        event.preventDefault();
 
         typed = false;
 
         if (typedEl) {
+
             typedEl.textContent = "";
+
         }
+
 
         window.scrollTo({
             top: 0,
             behavior: "smooth"
         });
+
 
         setTimeout(() => {
 
