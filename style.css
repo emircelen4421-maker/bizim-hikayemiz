@@ -746,3 +746,11 @@ section{
         pointer-events:auto
     }
 }
+#loader {
+    pointer-events: none;
+}
+
+.open-btn {
+    position: relative;
+    z-index: 10;
+}
