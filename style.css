@@ -754,3 +754,20 @@ section{
     position: relative;
     z-index: 10;
 }
+.continue {
+    background: #bd6073;
+    color: #fff;
+    opacity: 1;
+    visibility: visible;
+    position: relative;
+    z-index: 10;
+}
+
+.continue b {
+    color: #fff;
+}
+
+.continue:hover {
+    background: #d47789;
+    color: #fff;
+}
