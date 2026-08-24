@@ -273,7 +273,7 @@ function loadGallery() {
 
         const image = document.createElement("img");
 
-        image.src = "image.src = name;" + name;
+       image.src = name;
 
         image.alt = "Bizim anımız";
 
