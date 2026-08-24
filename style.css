@@ -962,3 +962,12 @@ section{
     }
 
 }
+#continueBtn {
+    background: red !important;
+    color: white !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    position: relative !important;
+    z-index: 99999 !important;
+}
