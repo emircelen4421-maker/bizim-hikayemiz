@@ -1,405 +1,479 @@
-<!DOCTYPE html>
-<html lang="tr">
+const LETTER = `Bir yıl önce hayatıma girdiğinde, bugün seni bu kadar çok seveceğimi bilmiyordum.
 
-<head>
-    <meta charset="UTF-8">
+Seninle geçen zaman bana şunu öğretti; bazı insanlar hayatına sadece girmez, hayatının bir parçası olur. Sen de benim için tam olarak öyle oldun.
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+Birlikte geçirdiğimiz her an, ettiğimiz her sohbet, attığın en küçük mesaj bile bende ayrı bir iz bıraktı. Bazen sadece senin yanımda olduğunu bilmek bile yetiyor.
 
-    <meta name="theme-color" content="#0e090d">
+İyi ki o gün seni tanımışım. İyi ki seni seçmişim, iyi ki sen de beni seçmişsin.
 
-    <title>Bizim Hikâyemiz ♥</title>
+Bu sadece ilk yılımız. Ben daha seninle yaşayacağımız nice güzel anıyı şimdiden merak ediyorum.
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+İlk yılımız kutlu olsun sevgilim. ♥
+Seni gerçekten çok seviyorum.
 
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Montserrat:wght@300;400;500;600&display=swap"
-          rel="stylesheet">
+İyi ki varsın. İyi ki biz varız.
+`;
 
-    <link rel="stylesheet" href="style.css">
-</head>
+const $ = (x) => document.querySelector(x);
+const $$ = (x) => document.querySelectorAll(x);
 
-<body>
 
-    <!-- LOADER -->
+/* =========================
+   LOADER
+========================= */
 
-    <div id="loader">
-        <div class="loader-heart">♥</div>
-        <p>bizim hikâyemiz hazırlanıyor...</p>
-    </div>
+function removeLoader() {
+    const loader = $("#loader");
 
+    if (!loader) return;
 
-    <!-- ARKA PLAN EFEKTLERİ -->
+    loader.style.opacity = "0";
 
-    <div class="grain"></div>
-    <div id="hearts"></div>
-    <div id="sparkles"></div>
+    setTimeout(() => {
+        if (loader && loader.parentNode) {
+            loader.parentNode.removeChild(loader);
+        }
+    }, 1000);
+}
 
 
-    <!-- MÜZİK -->
+/* Sayfa tamamen açılınca loader'ı kaldır */
+window.addEventListener("load", () => {
+    setTimeout(removeLoader, 700);
+});
 
-    <button class="music-btn" id="musicBtn" type="button">
-        ♫
-    </button>
 
-    <audio id="bgMusic" loop preload="auto">
-        <source src="music/music.mp3" type="audio/mpeg">
-    </audio>
+/* Herhangi bir yükleme sorunu olsa bile
+   2 saniyeden fazla loader'da kalmasın */
+setTimeout(removeLoader, 2500);
 
 
-    <!-- NAV -->
+/* =========================
+   ELEMENTLER
+========================= */
 
-    <nav id="nav">
+const openBtn = $("#openBtn");
+const continueBtn = $("#continueBtn");
+const story = $("#story");
+const memories = $("#memories");
 
-        <div class="nav-logo">
-            S <span>♥</span> E
-        </div>
+const musicBtn = $("#musicBtn");
+const music = $("#bgMusic");
 
-        <div class="nav-dots">
+const typedEl = $("#typed");
+const gallery = $("#gallery");
+const replay = $("#replay");
 
-            <button type="button" data-target="story">
-                01
-            </button>
 
-            <i></i>
+/* =========================
+   MÜZİK
+========================= */
 
-            <button type="button" data-target="memories">
-                02
-            </button>
+async function startMusic() {
 
-            <i></i>
+    if (!music) return;
 
-            <button type="button" data-target="final">
-                03
-            </button>
+    try {
 
-        </div>
+        music.volume = 0.7;
 
-    </nav>
+        await music.play();
 
+        if (musicBtn) {
+            musicBtn.classList.add("playing");
+        }
 
-    <main>
+    } catch (error) {
 
-        <!-- ================= HERO ================= -->
+        console.log("Müzik başlatılamadı:", error);
 
-        <section class="hero" id="hero">
+    }
+}
 
-            <div class="orb orb1"></div>
-            <div class="orb orb2"></div>
 
-            <div class="hero-content">
+/* =========================
+   MÜZİK BUTONU
+========================= */
 
-                <p class="eyebrow">
-                    24.08.2025 — 24.08.2026
-                </p>
+if (musicBtn) {
 
-                <h1>
-                    Bir yıl.<br>
-                    <em>Binlerce anı.</em>
-                </h1>
+    musicBtn.addEventListener("click", async () => {
 
-                <p class="sub">
-                    Ve hâlâ anlatacak çok güzel bir hikâyemiz var.
-                </p>
+        if (!music) return;
 
+        if (music.paused) {
 
-                <!-- ANA BUTON -->
+            await startMusic();
 
-                <button
-                    class="open-btn"
-                    id="openBtn"
-                    type="button"
-                    aria-label="Hikâyemizi aç">
+        } else {
 
-                    <span class="ring"></span>
+            music.pause();
 
-                    <span class="heart">
-                        ♥
-                    </span>
+            musicBtn.classList.remove("playing");
 
-                    <b>
-                        Hikâyemizi aç
-                    </b>
+        }
 
-                </button>
+    });
 
+}
 
-                <div class="scroll">
-                    aşağıda küçük bir sürpriz var
-                    <span>↓</span>
-                </div>
 
-            </div>
+/* =========================
+   HİKÂYEMİZİ AÇ
+========================= */
 
-        </section>
+let opened = false;
 
+if (openBtn) {
 
-        <!-- ================= MEKTUP ================= -->
+    openBtn.addEventListener("click", async (event) => {
 
-        <section class="story" id="story">
+        event.preventDefault();
 
-            <div class="section-label">
-                01 — BİR MEKTUP
-            </div>
+        /* Butona basıldığı için müzik başlayabilir */
+        await startMusic();
 
 
-            <div class="paper-wrap">
+        /* Mektuba geç */
 
-                <div class="paper-shadow"></div>
+        if (story) {
 
-                <article class="paper">
+            story.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
 
-                    <div class="paper-top">
+        }
 
-                        <span>♥</span>
 
-                        <small>
-                            27 AĞUSTOS 2025
-                        </small>
+        /* Mektubu yazdır */
 
-                        <span>♥</span>
+        setTimeout(() => {
 
-                    </div>
+            typeLetter();
 
+        }, 900);
 
-                    <h2>
-                        Sevgilime,
-                    </h2>
+    });
 
+}
 
-                    <div id="typed"></div>
 
+/* =========================
+   MEKTUP
+========================= */
 
-                    <p class="signature">
-                        Seni seven biri, <span>hep.</span>
-                    </p>
+let typed = false;
 
+function typeLetter() {
 
-                    <button
-                        class="continue"
-                        id="continueBtn"
-                        type="button">
+    if (typed || !typedEl) return;
 
-                        Anılarımıza geç
-                        <b>→</b>
+    typed = true;
 
-                    </button>
+    typedEl.textContent = "";
 
-                </article>
+    let i = 0;
 
-            </div>
 
-        </section>
+    function write() {
 
+        if (i >= LETTER.length) return;
 
-        <!-- ================= ANILAR ================= -->
+        typedEl.textContent += LETTER[i];
 
-        <section class="memories" id="memories">
+        const character = LETTER[i];
 
-            <div class="section-label">
-                02 — ANILARIMIZ
-            </div>
+        i++;
 
 
-            <header>
+        setTimeout(
+            write,
+            character === "\n" ? 250 : 18
+        );
 
-                <p class="eyebrow">
-                    KÜÇÜK BİR ZAMAN KAPSÜLÜ
-                </p>
+    }
 
-                <h2>
-                    Birlikte geçen<br>
-                    <em>güzel günler.</em>
-                </h2>
 
-                <p>
-                    Birlikte geçirdiğimiz güzel anlar...
-                </p>
+    write();
 
-            </header>
+}
 
 
-            <div class="counter-row">
+/* =========================
+   ANILARA GEÇ
+========================= */
 
-                <div>
-                    <strong>365</strong>
-                    <span>GÜN</span>
-                </div>
+if (continueBtn && memories) {
 
-                <div>
-                    <strong>12</strong>
-                    <span>AY</span>
-                </div>
+    continueBtn.addEventListener("click", (event) => {
 
-                <div>
-                    <strong>∞</strong>
-                    <span>ANI</span>
-                </div>
+        event.preventDefault();
+        event.stopPropagation();
 
-            </div>
+        memories.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
 
+    });
 
-            <!-- FOTOĞRAFLAR BURAYA GELECEK -->
+}
 
-            <div
-                class="polaroids"
-                id="gallery">
-            </div>
 
+/* =========================
+   FOTOĞRAFLAR
+========================= */
 
-            <!-- ZAMAN TÜNELİ -->
+const names = [
+    "foto1.jpg",
+    "foto2.jpg",
+    "foto3.jpg",
+    "foto4.jpg",
+    "foto5.jpg",
+    "foto6.jpg",
+    "foto7.jpg",
+    "foto8.jpg",
+    "foto9.jpg",
+    "foto10.jpg",
+    "foto11.jpg",
+    "foto12.jpg"
+];
 
-            <div class="timeline">
 
-                <div class="line"></div>
+const captions = [
+    "♥",
+    "♥",
+    "♥",
+    "♥",
+    "♥",
+    "♥",
+    "♥",
+    "♥",
+    "♥",
+    "♥",
+    "♥",
+    "♥"
+];
 
 
-                <div class="moment">
+function loadGallery() {
 
-                    <span>01</span>
+    if (!gallery) return;
 
-                    <div>
+    gallery.innerHTML = "";
 
-                        <small>
-                            İLK ANILAR
-                        </small>
 
-                        <h3>
-                            Her şeyin başladığı zaman.
-                        </h3>
+    names.forEach((name, index) => {
 
-                        <p>
-                            Belki o gün bunun bir yıl sonra
-                            burada olacağını bilmiyorduk.
-                            Ama iyi ki o gün vardı.
-                        </p>
+        const photo = document.createElement("div");
 
-                    </div>
+        photo.className = "photo";
 
-                </div>
 
+        const image = document.createElement("img");
 
-                <div class="moment reverse">
+        image.src = "photos/" + name;
 
-                    <span>02</span>
+        image.alt = "Bizim anımız";
 
-                    <div>
 
-                        <small>
-                            SONRA...
-                        </small>
+        image.onload = () => {
 
-                        <h3>
-                            Birlikte daha çok güldük.
-                        </h3>
+            setTimeout(() => {
 
-                        <p>
-                            Sıradan günleri bile özel yapan
-                            şey, onları beraber yaşamamızdı.
-                        </p>
+                photo.classList.add("show");
 
-                    </div>
+            }, index * 120);
 
-                </div>
+        };
 
 
-                <div class="moment">
+        image.onerror = () => {
 
-                    <span>03</span>
+            photo.remove();
 
-                    <div>
+        };
 
-                        <small>
-                            BUGÜN
-                        </small>
 
-                        <h3>
-                            Birinci yılımız.
-                        </h3>
+        const caption = document.createElement("div");
 
-                        <p>
-                            Ve bu sadece bir son değil.
-                            Hikâyenin yeni bölümünün başlangıcı.
-                        </p>
+        caption.className = "caption";
 
-                    </div>
+        caption.textContent =
+            captions[index] || "♥";
 
-                </div>
 
-            </div>
+        photo.appendChild(image);
 
-        </section>
+        photo.appendChild(caption);
 
+        gallery.appendChild(photo);
 
-        <!-- ================= FİNAL ================= -->
+    });
 
-        <section class="final" id="final">
+}
 
-            <div class="final-stars"></div>
 
+loadGallery();
 
-            <div class="final-content">
 
-                <p class="eyebrow">
-                    03 — SON BİR ŞEY
-                </p>
+/* =========================
+   NAV
+========================= */
 
+$$(".nav-dots button").forEach((button) => {
 
-                <div class="big-heart">
-                    ♥
-                </div>
+    button.addEventListener("click", () => {
 
+        const target = button.dataset.target;
 
-                <h2>
-                    İyi ki<br>
-                    <em>sen.</em>
-                </h2>
+        const section = $("#" + target);
 
+        if (!section) return;
 
-                <p class="final-text">
+        section.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
 
-                    İlk yılımız kutlu olsun.<br>
+    });
 
-                    İyi ki hayatımdasın,
-                    iyi ki bizim hikâyemiz var.
+});
 
-                </p>
 
+/* =========================
+   SECTION ANİMASYONLARI
+========================= */
 
-                <div class="date-line">
+const observer = new IntersectionObserver(
+    (entries) => {
 
-                    <span></span>
+        entries.forEach((entry) => {
 
-                    24 · 08 · 2026
+            if (entry.isIntersecting) {
 
-                    <span></span>
+                entry.target.classList.add("active");
 
-                </div>
+            }
 
+        });
 
-                <button
-                    id="replay"
-                    class="replay"
-                    type="button">
+    },
+    {
+        threshold: 0.35
+    }
+);
 
-                    Hikâyeyi baştan izle ↻
 
-                </button>
+$$("section").forEach((section) => {
 
-            </div>
+    observer.observe(section);
 
+});
 
-            <div class="forever">
-                S &nbsp; ♥ &nbsp; E
-            </div>
 
-        </section>
+/* =========================
+   UÇAN KALPLER
+========================= */
 
-    </main>
+function createHeart() {
 
+    const hearts = $("#hearts");
 
-    <script src="script.js"></script>
+    if (!hearts) return;
 
-</body>
-</html>
+
+    const heart = document.createElement("div");
+
+    heart.className = "floating-heart";
+
+    heart.textContent =
+        Math.random() > 0.25 ? "♥" : "♡";
+
+
+    heart.style.left =
+        Math.random() * 100 + "vw";
+
+
+    heart.style.fontSize =
+        10 + Math.random() * 18 + "px";
+
+
+    heart.style.animationDuration =
+        7 + Math.random() * 7 + "s";
+
+
+    hearts.appendChild(heart);
+
+
+    setTimeout(() => {
+
+        heart.remove();
+
+    }, 15000);
+
+}
+
+
+setInterval(createHeart, 1000);
+
+
+/* =========================
+   PARILTILAR
+========================= */
+
+const sparkles = $("#sparkles");
+
+if (sparkles) {
+
+    for (let i = 0; i < 25; i++) {
+
+        const sparkle = document.createElement("i");
+
+        sparkle.className = "spark";
+
+        sparkle.style.left =
+            Math.random() * 100 + "vw";
+
+        sparkle.style.top =
+            Math.random() * 100 + "vh";
+
+        sparkle.style.animationDelay =
+            Math.random() * 2 + "s";
+
+        sparkles.appendChild(sparkle);
+
+    }
+
+}
+
+
+/* =========================
+   BAŞTAN İZLE
+========================= */
+
+if (replay) {
+
+    replay.addEventListener("click", () => {
+
+        typed = false;
+
+        if (typedEl) {
+            typedEl.textContent = "";
+        }
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+        setTimeout(() => {
+
+            startMusic();
+
+        }, 500);
+
+    });
+
+}
